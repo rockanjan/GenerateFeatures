@@ -10,7 +10,7 @@ public class Main {
 			System.err.println("Usage: <createfeaturenew> inputfile outputfile");
 			System.exit(1);
 		}
-		String vocabIndexFile = "/home/anjan/Dropbox/vocab_index_final.txt";
+		String vocabIndexFile = "/home/anjan/Dropbox/vocab_index_final.before.txt";
 		VocabIndexReader.__init__(vocabIndexFile);
 		
 		FeatureGenerator generator = new FeatureGenerator(args[0], args[1]);

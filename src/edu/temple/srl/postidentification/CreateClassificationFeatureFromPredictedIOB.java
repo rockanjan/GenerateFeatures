@@ -10,7 +10,7 @@ import sun.applet.Main;
 public class CreateClassificationFeatureFromPredictedIOB {
 	public static void main(String[] args) throws IOException {
 		String outputFeatureFile = "/home/anjan/work/srl/jul11/dev.predictediob.classification"; 
-		String fileWithOriginalIOB = "/home/anjan/work/conll05-backup/combined/dev.combined.final";
+		String fileWithOriginalIOB = "/home/anjan/work/conll05-backup/combined/dev.combined.final"; //only last column will be used
 		String fileWithPredictedIOB = "/home/anjan/work/srl/jul11/dev.iden.tag";
 		int iobField = 7; //human index
 		//replace the IOB field

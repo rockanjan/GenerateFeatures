@@ -8,6 +8,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.logging.Logger;
 
 import edu.temple.srl.datastructure.DataRow;
@@ -40,6 +41,10 @@ public abstract class FeatureGeneratorBase {
 	protected static final String NO_WORD1 = "NW1";
 	protected static final String NO_HMM2 = "NH2";
 	protected static final String NO_WORD2 = "NW2";
+	protected static final String NO_PHRASE = "NP";
+	
+	private static final String[] punctuation_array = {",", "--"};
+	protected static final ArrayList<String> punctuations = new ArrayList<String>(Arrays.asList(punctuation_array));
 	
 	private String inputFilename;
 	private String outputFilename;

@@ -50,14 +50,15 @@ public class DataRow {
 	/* variadic function */
 	public String getRowWithAppendedFeatureNew(String... features) {
 		StringBuilder sb = new StringBuilder();
-		sb.append(word.toLowerCase() + " ");
+		sb.append(VocabIndexReader.getSmoothedString(word.toLowerCase()) + " ");
 		sb.append(word + " ");
-		sb.append(Stemmer.stemWord(word.toLowerCase()) + " ");
+		sb.append(Stemmer.stemWord(VocabIndexReader.getSmoothedString(word.toLowerCase())) + " ");
 		sb.append(predicateLabel + " ");
 		sb.append(intervenes + " ");
 		sb.append(hmmState + " ");
 		sb.append(naiveState + " ");
 		sb.append(pos + " ");
+		
 		for(String feature: features){
 			sb.append(feature + " ");
 		}
@@ -68,6 +69,9 @@ public class DataRow {
 	
 	
 
+	public String getSmoothedWord() {
+		return VocabIndexReader.getSmoothedString(getWord());
+	}
 	public Logger getLogger() {
 		return logger;
 	}

@@ -124,7 +124,38 @@ public class FeatureGenerator extends FeatureGeneratorBase {
 				String headDistance = classificationFeatures.get(4);
 				String wordBeforeArg = classificationFeatures.get(5);
 				String wordAfterArg =  classificationFeatures.get(6);
-				pw.println(dr.getRowWithAppendedFeatureNew(alphaNum,
+				
+				//phrases
+				String[] phraseFromCurrent = getPhraseFromCurrentWord(s, dr);
+				String[] phraseUptoCurrent = getPhraseUptoCurrentWord(s, dr);
+				String hmmPhraseFromCurrent = phraseFromCurrent[0];
+				String wordPhraseFromCurrent = phraseFromCurrent[1];
+				
+				String hmmPhraseUptoCurrent = phraseUptoCurrent[0];
+				String wordPhraseUptoCurrent = phraseUptoCurrent[1];
+				//combine
+				String wholeHmmPhrase = "";
+				String wholeWordPhrase = "";
+				
+
+				if(! hmmPhraseUptoCurrent.equals(FeatureGeneratorBase.NO_PHRASE)) {
+					wholeHmmPhrase += hmmPhraseUptoCurrent + FeatureGeneratorBase.JOIN;
+					wholeWordPhrase += wordPhraseUptoCurrent + FeatureGeneratorBase.JOIN;
+				}
+				
+				wholeHmmPhrase += dr.getHmmState();
+				wholeWordPhrase += dr.getSmoothedWord();
+				
+				if(! hmmPhraseFromCurrent.equals(FeatureGeneratorBase.NO_PHRASE) ) {
+					wholeHmmPhrase += FeatureGeneratorBase.JOIN + hmmPhraseFromCurrent;
+					wholeWordPhrase += FeatureGeneratorBase.JOIN + wordPhraseFromCurrent;
+				}
+				
+				//distance of the phrase from the current predicate
+				String distPhrase = getCurrentPhraseDistanceFromPredicate(s, dr, verbWordIndex);
+				
+				pw.println(dr.getRowWithAppendedFeatureNew(
+						alphaNum,
 						fourDigitNum, hasPeriods, hasHyphens, hasCapitalized,
 						hasSlashes,
 						hasColons,
@@ -151,6 +182,7 @@ public class FeatureGenerator extends FeatureGeneratorBase {
 						totalUpAndDownDistance,
 						hmmPathUptoCommonRoot,
 						hmmPathCommonRootDownToVerb,
+						
 						//classification features
 						predArgFirstWord,
 						predArgLastWord,
@@ -158,7 +190,17 @@ public class FeatureGenerator extends FeatureGeneratorBase {
 						predArgLastHmm,
 						headDistance,
 						wordBeforeArg,
-						wordAfterArg));
+						wordAfterArg,
+						
+						//phrase features
+						hmmPhraseUptoCurrent,
+						wordPhraseUptoCurrent,
+						hmmPhraseFromCurrent,
+						wordPhraseFromCurrent,
+						wholeHmmPhrase,
+						wholeWordPhrase,
+						distPhrase
+						));
 			}
 			pw.println();
 		}
@@ -207,18 +249,18 @@ public class FeatureGenerator extends FeatureGeneratorBase {
 		if (verbIndex >= 0) {
 			hmmPredicate = "" + s.get(verbIndex).getHmmState();
 			//wordPredicate = s.get(verbIndex).getWord();
-			wordPredicate = VocabIndexReader.getSmoothedString(s.get(verbIndex).getWord()) + "";
+			wordPredicate = s.get(verbIndex).getSmoothedWord() + "";
 		}
 
 		if (verbIndex >= 1) {
 			hmmOneBefore = "" + s.get(verbIndex - 1).getHmmState();
 			//wordOneBefore = s.get(verbIndex - 1).getWord();
-			wordOneBefore = VocabIndexReader.getSmoothedString(s.get(verbIndex - 1).getWord()) + "";
+			wordOneBefore = s.get(verbIndex - 1).getSmoothedWord() + "";
 		}
 		if (verbIndex >= 2) {
 			hmmTwoBefore = "" + s.get(verbIndex - 2).getHmmState();
 			//wordTwoBefore = "" + s.get(verbIndex - 2).getWord();
-			wordTwoBefore = VocabIndexReader.getSmoothedString(s.get(verbIndex - 2).getWord()) + "";
+			wordTwoBefore = s.get(verbIndex - 2).getSmoothedWord() + "";
 		}
 
 		// two hmms
@@ -458,7 +500,7 @@ public class FeatureGenerator extends FeatureGeneratorBase {
 		if (currentIndex < verbIndex) {
 			for (int i = currentIndex + 1; i < verbIndex; i++) {
 				//returnValue += s.get(i).getWord();
-				returnValue += VocabIndexReader.getSmoothedString(s.get(i).getWord());
+				returnValue += s.get(i).getSmoothedWord();
 				if (i != verbIndex - 1) {
 					returnValue += FeatureGeneratorBase.JOIN;
 				}
@@ -466,7 +508,7 @@ public class FeatureGenerator extends FeatureGeneratorBase {
 		} else {
 			for (int i = verbIndex + 1; i < currentIndex; i++) {
 				//returnValue += s.get(i).getWord();
-				returnValue += VocabIndexReader.getSmoothedString(s.get(i).getWord());
+				returnValue += s.get(i).getSmoothedWord();
 				if (i != currentIndex - 1) {
 					returnValue += FeatureGeneratorBase.JOIN;
 				}
@@ -519,14 +561,14 @@ public class FeatureGenerator extends FeatureGeneratorBase {
 		int currentIndex = dr.getIndex();
 		if (currentIndex < verbIndex) {
 			for (int i = currentIndex + 1; i < verbIndex; i++) {
-				returnValue += Stemmer.stemWord(s.get(i).getWord());
+				returnValue += Stemmer.stemWord(s.get(i).getSmoothedWord());
 				if (i != verbIndex - 1) {
 					returnValue += FeatureGeneratorBase.JOIN;
 				}
 			}
 		} else {
 			for (int i = verbIndex + 1; i < currentIndex; i++) {
-				returnValue += Stemmer.stemWord(s.get(i).getWord());
+				returnValue += Stemmer.stemWord(s.get(i).getSmoothedWord());
 				if (i != currentIndex - 1) {
 					returnValue += FeatureGeneratorBase.JOIN;
 				}
@@ -730,7 +772,7 @@ public class FeatureGenerator extends FeatureGeneratorBase {
 		String predicateWord = FeatureGeneratorBase.NO_VERB;
 		int verbIndex = s.getVerbWordIndex();
 		if(verbIndex >= 0){
-			 predicateWord = VocabIndexReader.getSmoothedString(s.get(verbIndex).getWord());
+			 predicateWord = s.get(verbIndex).getSmoothedWord();
 		}
 		
 		String firstWord = "";
@@ -748,25 +790,25 @@ public class FeatureGenerator extends FeatureGeneratorBase {
 			}
 			headDistance = Math.abs(verbIndex - dr.getIndex());
 			if(dr.getIndex() != 0){
-				wordBeforeArg = VocabIndexReader.getSmoothedString(s.get(dr.getIndex()-1).getWord());
+				wordBeforeArg = s.get(dr.getIndex()-1).getSmoothedWord();
 			} else {
 				wordBeforeArg = FeatureGeneratorBase.OOB;
 			}
-			firstWord = VocabIndexReader.getSmoothedString(dr.getWord());
+			firstWord = dr.getSmoothedWord();
 			firstHmm = dr.getHmmState();
 			//for last
 			int currentIndex = dr.getIndex();
 			for(int i=currentIndex+1; i<s.size(); i++){
 				String nextBio = s.get(i).getIdentificationLabel();
 				if(nextBio.equals("B") || nextBio.equals("O")){
-					lastWord = VocabIndexReader.getSmoothedString(s.get(i-1).getWord());
+					lastWord = s.get(i-1).getSmoothedWord();
 					lastHmm = s.get(i-1).getHmmState();
-					wordAfterArg = VocabIndexReader.getSmoothedString(s.get(i).getWord());
+					wordAfterArg = s.get(i).getSmoothedWord();
 					break;
 				}
 			}
 			if(lastWord.isEmpty()){ //end of sentence and still we had I
-				lastWord = VocabIndexReader.getSmoothedString(s.get(s.size()-1).getWord());
+				lastWord = s.get(s.size()-1).getSmoothedWord();
 				lastHmm = s.get(s.size()-1).getHmmState();
 				wordAfterArg = FeatureGeneratorBase.OOB;
 			}
@@ -776,12 +818,12 @@ public class FeatureGenerator extends FeatureGeneratorBase {
 			for(int i=currentIndex-1 ; i>=0; i--){
 				String previousBio = s.get(i).getIdentificationLabel();
 				if(previousBio.equals("B")){
-					firstWord = VocabIndexReader.getSmoothedString(s.get(i).getWord());
+					firstWord = s.get(i).getSmoothedWord();
 					firstHmm = s.get(i).getHmmState();
 					//head distance
 					headDistance = Math.abs(verbIndex - i);
 					if(i != 0){
-						wordBeforeArg = VocabIndexReader.getSmoothedString(s.get(i-1).getWord());
+						wordBeforeArg = s.get(i-1).getSmoothedWord();
 					} else {
 						wordAfterArg = FeatureGeneratorBase.OOB;
 					}
@@ -792,14 +834,14 @@ public class FeatureGenerator extends FeatureGeneratorBase {
 			for(int i=currentIndex+1; i<s.size(); i++){
 				String nextBio = s.get(i).getIdentificationLabel();
 				if(nextBio.equals("B") || nextBio.equals("O")){
-					lastWord = VocabIndexReader.getSmoothedString(s.get(i-1).getWord());
+					lastWord = s.get(i-1).getSmoothedWord();
 					lastHmm = s.get(i-1).getHmmState();
-					wordAfterArg = VocabIndexReader.getSmoothedString(s.get(i).getWord());
+					wordAfterArg = s.get(i).getSmoothedWord();
 					break;
 				}
 			}
 			if(lastWord.isEmpty()){ //end of sentence and still we had I
-				lastWord = VocabIndexReader.getSmoothedString(s.get(s.size()-1).getWord());
+				lastWord = s.get(s.size()-1).getSmoothedWord();
 				lastHmm = s.get(s.size()-1).getHmmState();
 				wordAfterArg = FeatureGeneratorBase.OOB;
 			}
@@ -827,5 +869,104 @@ public class FeatureGenerator extends FeatureGeneratorBase {
 		
 		
 		return features;
+	}
+
+	/*****************Phrases between punctuations****************/
+	
+	//current word EXCLUDED in both cases
+	//a. phrases(hmm and word) from current verb or previous punctuation or BOS upto the current word
+	//b. phrases from the current word upto current verb or punctuation or EOS
+	
+	//a.
+	private String[] getPhraseUptoCurrentWord(Sentence s, DataRow dr) {
+		String returnString[] = {FeatureGeneratorBase.NO_PHRASE, FeatureGeneratorBase.NO_PHRASE};
+		int currentIndex = dr.getIndex();
+		if(currentIndex > 0){
+			//find the index of either previous punctuation, current verb or BOS
+			int startIndex = -1; 
+			for(int i=currentIndex-1; i>=0; i--) {
+				if(FeatureGeneratorBase.punctuations.contains(s.get(i).getWord()) || s.get(i).getPredicateLabel().equals("V")) {
+					startIndex = i;
+					break;
+				}
+			}
+			//if startIndex still is -1, reached BOS
+			String hmmPhrase = "";
+			String wordPhrase = "";
+			for(int i=startIndex+1; i<currentIndex; i++) {
+				hmmPhrase += s.get(i).getHmmState();
+				wordPhrase += s.get(i).getSmoothedWord();
+				if(i != currentIndex-1) {
+					hmmPhrase += FeatureGeneratorBase.JOIN;
+					wordPhrase += FeatureGeneratorBase.JOIN;
+				}
+			}
+			if(! hmmPhrase.isEmpty() && ! wordPhrase.isEmpty() ) {
+				returnString[0] = hmmPhrase;
+				returnString[1] = wordPhrase;
+			}
+		}
+		return returnString;
+	}
+	
+	//b.
+	private String[] getPhraseFromCurrentWord(Sentence s, DataRow dr) { 
+		String returnString[] = {FeatureGeneratorBase.NO_PHRASE, FeatureGeneratorBase.NO_PHRASE};
+		int currentIndex = dr.getIndex();
+		if(currentIndex < s.size()) {
+			//find the index of either next punctuation, current verb or EOS
+			int endIndex = s.size(); //invalid index
+			for(int i=currentIndex+1; i<s.size(); i++) {
+				if(FeatureGeneratorBase.punctuations.contains(s.get(i).getWord()) || s.get(i).getPredicateLabel().equals("V")) {
+					endIndex = i;
+					break;
+				}
+			}
+			//if endIndex is still size of sentence, reached EOS
+			String hmmPhrase = "";
+			String wordPhrase = "";
+			for(int i=currentIndex+1; i<endIndex; i++) {
+				hmmPhrase += s.get(i).getHmmState();
+				wordPhrase += s.get(i).getSmoothedWord();
+				if(i != endIndex-1) {
+					hmmPhrase += FeatureGeneratorBase.JOIN;
+					wordPhrase += FeatureGeneratorBase.JOIN;
+				}
+			}
+			if(! hmmPhrase.isEmpty() && ! wordPhrase.isEmpty() ) {
+				returnString[0] = hmmPhrase;
+				returnString[1] = wordPhrase;
+			}
+		}
+		return returnString;
+	}
+	
+	//c. phrase distance from the predicate
+	
+	private String getCurrentPhraseDistanceFromPredicate(Sentence s, DataRow dr, int verbWordIndex) {
+		String distance = "NV";
+		if(verbWordIndex == -1) {
+			return distance;
+		}
+		int dist = 0;
+		if(dr.getIndex() == verbWordIndex) {
+			distance = "V";
+			return distance;
+		}
+		else if(dr.getIndex() < verbWordIndex) {
+			for(int i=dr.getIndex()+1; i<verbWordIndex; i++) {
+				if(s.get(i).getWord().equals(",") | s.get(i).getWord().equals("--")) {
+					dist++;
+				}
+			}
+		} 
+		else {
+			for(int i=verbWordIndex+1; i<dr.getIndex(); i++) {
+				if(s.get(i).getWord().equals(",") | s.get(i).getWord().equals("--")) {
+					dist++;
+				}
+			}
+		}
+		return dist + "";
 	}
 }

@@ -20,11 +20,11 @@ public class VocabIndex {
 	public static void main(String[] args) throws IOException, InterruptedException {
 		int THRESHOLD = 2;
 		// System.out.println("Integer Max Value = " + Integer.MAX_VALUE);
-		String vocabIndexFile = "/home/anjan/Dropbox/vocab_index_for_feature.txt";
+		String vocabIndexFile = "/home/anjan/Dropbox/vocab_index.txt";
 		String NUM = "__NUM__";
 		// File file = new File ("/temp/test.txt");
-		File file = new File("/home/anjan/Dropbox/combined.words_only.nopunct");
-		Pattern p1 = Pattern.compile("^-{0,1}[0-9]+\\.*[0-9]*"); // eg -9, 100,
+		File file = new File("/home/anjan/Dropbox/combined.single.words");
+		Pattern p1 = Pattern.compile("(^-{0,1}[0-9]+\\.*[0-9]*)+"); // eg -9, 100,
 																	// 100.001
 																	// etc
 		Pattern p2 = Pattern.compile("^-{0,1}[0-9]*\\.*[0-9]+"); // eg. -.5, .5
@@ -56,7 +56,15 @@ public class VocabIndex {
 						|| m4.matches() || m5.matches() || m6.matches()) {
 					word = NUM;
 				}
-
+				
+				word = word.replaceAll("" +
+						"([0-9]+\\\\/[0-9]+)|" +
+						"(([0-9]+-)+[0-9]+)|" +
+						"([0-9]+:[0-9]+)|" +
+						"(^-{0,1}[0-9]{1,3}[,[0-9]{3}]*\\.*[0-9]*)|" +
+						"(^-{0,1}[0-9]*\\.*[0-9]+)|" +
+						"(^-{0,1}[0-9]+\\.*[0-9]*)+"
+						, "__NUM__"); //for something like 10-years-old, 2-for-3 etc
 				if (wordCount.containsKey(word)) {
 					wordCount.put(word, wordCount.get(word) + 1);
 				} else {
