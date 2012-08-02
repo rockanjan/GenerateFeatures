@@ -154,6 +154,9 @@ public class FeatureGenerator extends FeatureGeneratorBase {
 				//distance of the phrase from the current predicate
 				String distPhrase = getCurrentPhraseDistanceFromPredicate(s, dr, verbWordIndex);
 				
+				String chunkBefore = getChunkLabelBeforePredicate(s, dr, verbWordIndex);
+				String chunkAfter = getChunkLabelAfterPredicate(s, dr, verbWordIndex);
+				
 				pw.println(dr.getRowWithAppendedFeatureNew(
 						alphaNum,
 						fourDigitNum, hasPeriods, hasHyphens, hasCapitalized,
@@ -443,7 +446,7 @@ public class FeatureGenerator extends FeatureGeneratorBase {
 			return FeatureGeneratorBase.NO_VERB;
 		}
 		if (verbIndex == 0) { // if verb is itself the first word
-			return FeatureGeneratorBase.OOB;
+			return FeatureGeneratorBase.OOB1;
 		}
 		returnValue = "" + s.get(verbIndex - 1).getHmmState();
 		return returnValue;
@@ -455,9 +458,33 @@ public class FeatureGenerator extends FeatureGeneratorBase {
 			return FeatureGeneratorBase.NO_VERB;
 		}
 		if (verbIndex == s.size() - 1) {
-			return FeatureGeneratorBase.OOB;
+			return FeatureGeneratorBase.OOB2;
 		}
 		returnValue = "" + s.get(verbIndex + 1).getHmmState();
+		return returnValue;
+	}
+	
+	private String getChunkLabelBeforePredicate(Sentence s, DataRow dr, int verbIndex) {
+		String returnValue = FeatureGeneratorBase.ERROR;
+		if (verbIndex == -1) {
+			return FeatureGeneratorBase.NO_VERB;
+		}
+		if (verbIndex == 0) { // if verb is itself the first word
+			return FeatureGeneratorBase.OOB1;
+		}
+		returnValue = "" + s.get(verbIndex - 1).getChunk();
+		return returnValue;
+	}
+	
+	private String getChunkLabelAfterPredicate(Sentence s, DataRow dr, int verbIndex) {
+		String returnValue = FeatureGeneratorBase.ERROR;
+		if (verbIndex == -1) {
+			return FeatureGeneratorBase.NO_VERB;
+		}
+		if (verbIndex == s.size() - 1) {
+			return FeatureGeneratorBase.OOB2;
+		}
+		returnValue = "" + s.get(verbIndex + 1).getChunk();
 		return returnValue;
 	}
 
@@ -792,7 +819,7 @@ public class FeatureGenerator extends FeatureGeneratorBase {
 			if(dr.getIndex() != 0){
 				wordBeforeArg = s.get(dr.getIndex()-1).getSmoothedWord();
 			} else {
-				wordBeforeArg = FeatureGeneratorBase.OOB;
+				wordBeforeArg = FeatureGeneratorBase.OOB1;
 			}
 			firstWord = dr.getSmoothedWord();
 			firstHmm = dr.getHmmState();
@@ -810,7 +837,7 @@ public class FeatureGenerator extends FeatureGeneratorBase {
 			if(lastWord.isEmpty()){ //end of sentence and still we had I
 				lastWord = s.get(s.size()-1).getSmoothedWord();
 				lastHmm = s.get(s.size()-1).getHmmState();
-				wordAfterArg = FeatureGeneratorBase.OOB;
+				wordAfterArg = FeatureGeneratorBase.OOB2;
 			}
 		} else if(bioLabel.equals("I")){
 			//find initial B
@@ -825,7 +852,7 @@ public class FeatureGenerator extends FeatureGeneratorBase {
 					if(i != 0){
 						wordBeforeArg = s.get(i-1).getSmoothedWord();
 					} else {
-						wordAfterArg = FeatureGeneratorBase.OOB;
+						wordAfterArg = FeatureGeneratorBase.OOB2;
 					}
 					break;
 				}
@@ -843,7 +870,7 @@ public class FeatureGenerator extends FeatureGeneratorBase {
 			if(lastWord.isEmpty()){ //end of sentence and still we had I
 				lastWord = s.get(s.size()-1).getSmoothedWord();
 				lastHmm = s.get(s.size()-1).getHmmState();
-				wordAfterArg = FeatureGeneratorBase.OOB;
+				wordAfterArg = FeatureGeneratorBase.OOB2;
 			}
 		} else {
 			System.err.println("Unexpected BIO tag " + bioLabel);

@@ -29,7 +29,8 @@ public abstract class FeatureGeneratorBase {
 	protected static final String BEFORE = "B";
 	protected static final String AFTER = "A";
 	protected static final String ERROR = "E";
-	protected static final String OOB = "OOB"; //out of bound
+	protected static final String OOB1 = "OOB1"; //out of bound BOS
+	protected static final String OOB2 = "OOB2"; //out of bound EOS
 	protected static final String YES = "Y";
 	protected static final String NO = "N";
 	protected static final String NO_ARG = "O";

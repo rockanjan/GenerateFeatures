@@ -19,8 +19,9 @@ public class DataRow {
 	private String classificationLabel;
 	private int hmmState;
 	private int naiveState;
+	private String chunk;
 	
-	private int FIELDS = 10;
+	private int FIELDS = 11;
 	
 	public void processLine(String line){
 		//processes a string of line, stores the field
@@ -41,7 +42,7 @@ public class DataRow {
 		
 		hmmState = Integer.parseInt(splitted[8]);
 		naiveState = Integer.parseInt(splitted[9]);
-		
+		chunk = splitted[10];
 		if(splitted.length > FIELDS){
 			System.err.println("WARNING: data row has more than required columns: " + line);
 		}
@@ -62,6 +63,7 @@ public class DataRow {
 		for(String feature: features){
 			sb.append(feature + " ");
 		}
+		sb.append(chunk + " ");
 		sb.append(identificationLabel + " ");
 		sb.append(classificationLabel + " ");
 		return sb.toString();
@@ -201,4 +203,8 @@ public class DataRow {
 	public void setNaiveState(int naiveState) {
 		this.naiveState = naiveState;
 	}	
+	
+	public String getChunk() {
+		return chunk;
+	}
 }
