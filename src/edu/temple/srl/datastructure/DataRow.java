@@ -65,7 +65,7 @@ public class DataRow {
 		}
 		sb.append(chunk + " ");
 		sb.append(identificationLabel + " ");
-		sb.append(classificationLabel + " ");
+		//sb.append(classificationLabel + " ");
 		return sb.toString();
 	}
 	

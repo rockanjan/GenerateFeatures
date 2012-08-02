@@ -202,7 +202,11 @@ public class FeatureGenerator extends FeatureGeneratorBase {
 						wordPhraseFromCurrent,
 						wholeHmmPhrase,
 						wholeWordPhrase,
-						distPhrase
+						distPhrase,
+						
+						//chunks
+						chunkBefore,
+						chunkAfter
 						));
 			}
 			pw.println();
