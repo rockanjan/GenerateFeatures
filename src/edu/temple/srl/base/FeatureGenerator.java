@@ -157,6 +157,10 @@ public class FeatureGenerator extends FeatureGeneratorBase {
 				String chunkBefore = getChunkLabelBeforePredicate(s, dr, verbWordIndex);
 				String chunkAfter = getChunkLabelAfterPredicate(s, dr, verbWordIndex);
 				
+				String posBefore = getPosLabelBeforePredicate(s, dr, verbWordIndex);
+				String posAfter = getPosLabelAfterPredicate(s, dr, verbWordIndex);
+				String posPath = getPosPathToPredicate(s, dr, verbWordIndex);
+				String chunkPath = getChunkPathToPredicate(s, dr, verbWordIndex);
 				pw.println(dr.getRowWithAppendedFeatureNew(
 						alphaNum,
 						fourDigitNum, hasPeriods, hasHyphens, hasCapitalized,
@@ -206,7 +210,11 @@ public class FeatureGenerator extends FeatureGeneratorBase {
 						
 						//chunks
 						chunkBefore,
-						chunkAfter
+						chunkAfter,
+						posBefore,
+						posAfter,
+						posPath,
+						chunkPath
 						));
 			}
 			pw.println();
@@ -489,6 +497,91 @@ public class FeatureGenerator extends FeatureGeneratorBase {
 			return FeatureGeneratorBase.OOB2;
 		}
 		returnValue = "" + s.get(verbIndex + 1).getChunk();
+		return returnValue;
+	}
+	
+	private String getPosLabelBeforePredicate(Sentence s, DataRow dr, int verbIndex) {
+		String returnValue = FeatureGeneratorBase.ERROR;
+		if (verbIndex == -1) {
+			return FeatureGeneratorBase.NO_VERB;
+		}
+		if (verbIndex == 0) { // if verb is itself the first word
+			return FeatureGeneratorBase.OOB1;
+		}
+		returnValue = "" + s.get(verbIndex - 1).getPos();
+		return returnValue;
+	}
+	
+	private String getPosLabelAfterPredicate(Sentence s, DataRow dr, int verbIndex) {
+		String returnValue = FeatureGeneratorBase.ERROR;
+		if (verbIndex == -1) {
+			return FeatureGeneratorBase.NO_VERB;
+		}
+		if (verbIndex == s.size() - 1) {
+			return FeatureGeneratorBase.OOB2;
+		}
+		returnValue = "" + s.get(verbIndex + 1).getPos();
+		return returnValue;
+	}
+	
+	private String getChunkPathToPredicate(Sentence s, DataRow dr, int verbIndex) {
+		String returnValue = "";
+		if (verbIndex == -1) {
+			return FeatureGeneratorBase.NO_VERB;
+		}
+		int currentIndex = dr.getIndex();
+		if (currentIndex < verbIndex) {
+			for (int i = currentIndex + 1; i < verbIndex; i++) {
+				returnValue += s.get(i).getChunk();
+				if (i != verbIndex - 1) {
+					returnValue += FeatureGeneratorBase.JOIN;
+				}
+			}
+		} else {
+			for (int i = verbIndex + 1; i < currentIndex; i++) {
+				returnValue += s.get(i).getChunk();
+				if (i != currentIndex - 1) {
+					returnValue += FeatureGeneratorBase.JOIN;
+				}
+			}
+		}
+		if (returnValue.equals("")) {
+			returnValue = FeatureGeneratorBase.NO_PATH;
+		}
+		if (dr.getIndex() == verbIndex) {
+			returnValue = FeatureGeneratorBase.VERB;
+		}
+		return returnValue;
+	}
+
+	
+	private String getPosPathToPredicate(Sentence s, DataRow dr, int verbIndex) {
+		String returnValue = "";
+		if (verbIndex == -1) {
+			return FeatureGeneratorBase.NO_VERB;
+		}
+		int currentIndex = dr.getIndex();
+		if (currentIndex < verbIndex) {
+			for (int i = currentIndex + 1; i < verbIndex; i++) {
+				returnValue += s.get(i).getPos();
+				if (i != verbIndex - 1) {
+					returnValue += FeatureGeneratorBase.JOIN;
+				}
+			}
+		} else {
+			for (int i = verbIndex + 1; i < currentIndex; i++) {
+				returnValue += s.get(i).getPos();
+				if (i != currentIndex - 1) {
+					returnValue += FeatureGeneratorBase.JOIN;
+				}
+			}
+		}
+		if (returnValue.equals("")) {
+			returnValue = FeatureGeneratorBase.NO_PATH;
+		}
+		if (dr.getIndex() == verbIndex) {
+			returnValue = FeatureGeneratorBase.VERB;
+		}
 		return returnValue;
 	}
 

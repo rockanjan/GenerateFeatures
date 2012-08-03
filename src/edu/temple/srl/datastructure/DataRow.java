@@ -20,8 +20,9 @@ public class DataRow {
 	private int hmmState;
 	private int naiveState;
 	private String chunk;
+	private String ne;
 	
-	private int FIELDS = 11;
+	private int FIELDS = 12;
 	
 	public void processLine(String line){
 		//processes a string of line, stores the field
@@ -43,6 +44,7 @@ public class DataRow {
 		hmmState = Integer.parseInt(splitted[8]);
 		naiveState = Integer.parseInt(splitted[9]);
 		chunk = splitted[10];
+		ne = splitted[11];
 		if(splitted.length > FIELDS){
 			System.err.println("WARNING: data row has more than required columns: " + line);
 		}
@@ -64,6 +66,7 @@ public class DataRow {
 			sb.append(feature + " ");
 		}
 		sb.append(chunk + " ");
+		sb.append(ne + " ");
 		sb.append(identificationLabel + " ");
 		//sb.append(classificationLabel + " ");
 		return sb.toString();
@@ -206,5 +209,9 @@ public class DataRow {
 	
 	public String getChunk() {
 		return chunk;
+	}
+	
+	public String getNe(){
+		return ne;
 	}
 }

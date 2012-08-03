@@ -20,10 +20,10 @@ public class VocabIndex {
 	public static void main(String[] args) throws IOException, InterruptedException {
 		int THRESHOLD = 2;
 		// System.out.println("Integer Max Value = " + Integer.MAX_VALUE);
-		String vocabIndexFile = "/home/anjan/Dropbox/vocab_index.txt";
+		String vocabIndexFile = "/home/anjan/Dropbox/research/vocab_index_threshold_2_or_more.txt";
 		String NUM = "__NUM__";
 		// File file = new File ("/temp/test.txt");
-		File file = new File("/home/anjan/Dropbox/combined.single.words");
+		File file = new File("/home/anjan/Dropbox/research/combined.words");
 		Pattern p1 = Pattern.compile("(^-{0,1}[0-9]+\\.*[0-9]*)+"); // eg -9, 100,
 																	// 100.001
 																	// etc
@@ -83,7 +83,7 @@ public class VocabIndex {
 		PrintWriter pw = new PrintWriter(vocabIndexFile);
 		int i = 0;
 		for (String key : wordCount.keySet()) {
-			if (wordCount.get(key) > THRESHOLD) {
+			if (wordCount.get(key) >= THRESHOLD) {
 				pw.println(++i + "\t" + key + "\t" + wordCount.get(key));
 			} else {
 				pw.println(-1 + "\t" + key + "\t" + wordCount.get(key));
@@ -95,7 +95,7 @@ public class VocabIndex {
 
 		// Rearrange so that higher frequency gets lower integers
 		// run script file
-		String scriptFile = "/home/anjan/Dropbox/process_vocab.sh";
+		String scriptFile = "/home/anjan/Dropbox/research/process_vocab.sh";
 		System.out.println("Rearranging using script : " + scriptFile);
 		Process p = Runtime.getRuntime().exec("sh " + scriptFile);
 		p.waitFor();
